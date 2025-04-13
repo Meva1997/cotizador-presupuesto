@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+*{
+  box-sizing: border-box;
+}
+
+#presupuesto {
+  text-align: center;
+  appearance: textfield;         /* Propiedad estándar */
+  -moz-appearance: textfield;    /* Firefox */
+  -webkit-appearance: none;      /* Safari/Chrome en general */
+}
+
+#presupuesto::-webkit-inner-spin-button,
+#presupuesto::-webkit-outer-spin-button {
+  -webkit-appearance: none; /* Chrome, Safari, Edge */
+  margin: 0;
+}
+
+#dinero-gasto {
+  text-align: center;
+  appearance: textfield;         /* Propiedad estándar */
+  -moz-appearance: textfield;    /* Firefox */
+  -webkit-appearance: none;      /* Safari/Chrome en general */
+}
+
+#dinero-gasto::-webkit-inner-spin-button,
+#dinero-gasto::-webkit-outer-spin-button {
+  -webkit-appearance: none; /* Chrome, Safari, Edge */
+  margin: 0;
+}
+

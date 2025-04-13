@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./src/style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <title>Cotizador de presupuesto</title>
+  </head>
+  <body class="bg-gray-100 font-['Inter'] min-h-screen">
+    <header class="py-6 bg-white shadow-md">
+      <h1 class="text-center text-3xl font-semibold text-gray-800">Calculadora de Presupuesto</h1>
+    </header>
+    <button id="btn-reiniciar" class="bg-red-500 border-red-800 text-white px-4 py-2 rounded-full hover:bg-red-800 transition hover:cursor-pointer block mt-5 mx-auto">
+      Reiniciar app
+    </button>
+
+    <main class="max-w-7xl mx-auto px-4 py-10">
+      <article class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+        <!-- Sección de formularios -->
+        <section class="space-y-8">
+          <form id="form-1" class="bg-white p-6 rounded-xl shadow space-y-4 flex flex-col items-center">
+            <label for="presupuesto" class="block font-semibold text-gray-700 text-center">Ingresa tu presupuesto</label>
+            <input type="number" id="presupuesto" placeholder="Ej: $1000" min="0" class="w-full border border-gray-300 rounded p-2 text-center">
+            <button id="btn-ingresar" class="bg-gray-800 text-white px-4 py-2 rounded-full hover:bg-black transition hover:cursor-pointer mx-auto mt-4">
+              Ingresar
+            </button>
+          </form>
+
+          <form id="form-2" class="bg-white p-6 rounded-xl shadow space-y-4 flex flex-col items-center">
+            <label for="nombre-gasto" class="block font-semibold text-gray-700">Nombre del gasto</label>
+            <input type="text" id="nombre-gasto" placeholder="Ej: Despensa" class="w-full border border-gray-300 rounded p-2 text-center">
+            <label for="dinero-gasto" class="block font-semibold text-gray-700">Cantidad Gastada</label>
+            <input type="number" id="dinero-gasto" placeholder="Dinero gastado" min="1" class="w-full border border-gray-300 rounded p-2 text-center">
+            <button type="submit" id="btn-submit" class="bg-gray-800 text-white px-4 py-2 rounded-full hover:bg-black transition hover:cursor-pointer">Calcular</button>
+          </form>
+
+          <div class="bg-white p-6 rounded-xl shadow text-center space-y-2">
+            <h2 class="text-xl font-semibold text-gray-700">Presupuesto </h2>
+            <p id="cantidad-inicial" class="text-2xl font-bold text-green-600">$0</p>
+          </div>
+
+          <div id="div-restante" class="bg-white p-6 rounded-xl shadow text-center space-y-2">
+            <h2 class="text-xl font-semibold text-gray-700">Dinero Restante</h2>
+            <p id="cantidad-restante" class="text-2xl font-bold text-blue-600">$0</p>
+          </div>
+        </section>
+
+        <!-- Sección de gastos -->
+        <section class="bg-white p-6 rounded-xl shadow space-y-4">
+          <h2 id="gastos-realizados" class="text-xl font-semibold text-gray-700 text-center">Gastos realizados</h2>
+          <div id="lista-gastos" class="space-y-2">
+            <!-- Aquí se agregan los gastos -->
+          </div>
+        </section>
+
+        <!-- Sección de dinero agregado -->
+        <section class="bg-white p-6 rounded-xl shadow space-y-4">
+          <h2 class="text-xl font-semibold text-gray-700 text-center">Dinero agregado</h2>
+          <div id="lista-extra" class="space-y-2">
+            <!-- Aquí se agrega el dinero extra -->
+          </div>
+        </section>
+      </article>
+    </main>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
+
