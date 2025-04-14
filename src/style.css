@@ -30,3 +30,8 @@
   margin: 0;
 }
 
+.resaltado {
+  background-color: #ffffcc;
+  transition: background-color 1s;
+}
+

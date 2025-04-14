@@ -13,6 +13,7 @@ const btnReiniciar = document.querySelector('#btn-reiniciar')
 const listaGastos = document.querySelector('#lista-gastos'); 
 const listaExtra = document.querySelector('#lista-extra'); 
 const gastosRealizados = document.querySelector('#gastos-realizados')
+const tituloDineroAgregado = document.querySelector('#dinero-agregado'); 
 
 form1.addEventListener('submit', validarPresupuesto)
 form2.addEventListener('submit', validarGasto)
@@ -27,7 +28,10 @@ let idEnEdicion = null
 listaGastos.addEventListener('click', (e) => {
   const id = e.target.getAttribute('data-id'); 
   if(e.target.classList.contains('btn-editar')){
-    editarElemento(id, 'gasto');; 
+    editarElemento(id, 'gasto');
+    // Scroll al formulario (ideal para móvil)
+    form2.scrollIntoView({ behavior: 'smooth' });
+    inputNombreGasto.focus(); 
 
   }
   if(e.target.classList.contains('btn-eliminar')){
@@ -40,6 +44,9 @@ listaExtra.addEventListener('click', (e) => {
   const id = e.target.getAttribute('data-id');
   if (e.target.classList.contains('btn-editar-extra')) {
     editarElemento(id, 'ingreso');
+    // Scroll al formulario (ideal para móvil)
+    form1.scrollIntoView({ behavior: 'smooth' });
+    inputPresupuesto.focus()
   }
   if (e.target.classList.contains('btn-eliminar-extra')) {
     eliminarElemento(id, 'ingreso'); 
@@ -73,46 +80,117 @@ document.addEventListener('DOMContentLoaded', () => {
 
 })
 
-function validarPresupuesto(e){
-  e.preventDefault()
+function validarPresupuesto(e) {
+  e.preventDefault();
 
-  const input1 = parseFloat(inputPresupuesto.value.trim())
+  const input1 = parseFloat(inputPresupuesto.value.trim());
 
-  if(isNaN(input1) || input1 <= 0){
-    alerta('Ingrese un numero valido mayor a 0', form1, 'error'); 
-    return
+  if (isNaN(input1) || input1 <= 0) {
+    alerta('Ingrese un número válido mayor a 0', form1, 'error');
+    return;
   }
 
-  presupuestoInicial += input1; 
-  dineroRestante += input1
+  if (idEnEdicion) {
+    // Estamos editando un ingreso
+    const ingreso = dineroExtra.find(i => i.id === idEnEdicion);
+    if (!ingreso) return;
 
-  cantidadInicial.textContent = '$' + presupuestoInicial; 
-  cantidadRestante.textContent = '$' + presupuestoInicial; 
-  
-  alerta('Agregado correctamente', form1, 'exito'); 
+    const totalGastado = listaDeGastos.reduce((acc, item) => acc + Number(item.cantidad), 0);
 
-  dineroExtra.push({
-    id: generarId(),
-    cantidad: input1
-  })
+    // Calcular el nuevo presupuesto simulado
+    const presupuestoSinIngreso = presupuestoInicial - ingreso.cantidad;
+    const nuevoPresupuesto = presupuestoSinIngreso + input1;
 
-  mostrarExtras(dineroExtra); 
-  guardarIngresosEnLocalStorage(); 
+    if (nuevoPresupuesto < totalGastado) {
+      alerta('No puedes disminuir este ingreso porque superas tus gastos actuales', form1, 'error');
+      return;
+    } 
 
-  inputPresupuesto.value = ''; 
+    ingreso.cantidad = input1;
 
-  if(dineroRestante >= 0){
-    form2.style.display = 'flex'; 
+    presupuestoInicial = nuevoPresupuesto;
+    dineroRestante = presupuestoInicial - totalGastado;
 
-    const mensajeError = document.querySelector('.mensaje-error-gasto'); 
-    if(mensajeError){
-      mensajeError.remove(); 
+    cantidadInicial.textContent = `$${presupuestoInicial}`;
+    cantidadRestante.textContent = `$${dineroRestante}`;
+
+    guardarIngresosEnLocalStorage();
+    alerta('Editado Correctamente', form1, 'exito')
+    mostrarExtras(dineroExtra);
+
+    sinDinero(); 
+
+    const elementoEditado = document.querySelector(`#lista-extra [data-id="${idEnEdicion}"]`);
+    if (elementoEditado) {
+      requestAnimationFrame(() => {
+        elementoEditado.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        elementoEditado.classList.add('resaltado');
+        setTimeout(() => {
+          elementoEditado.classList.remove('resaltado');
+        }, 1000);
+      });
     }
+    
+
+    idEnEdicion = null;
+    const btn = document.querySelector('#btn-submit-ingreso') || form1.querySelector('button[type="submit"]');
+    if (btn) btn.textContent = 'Calcular';
+
+  } else {
+    // Nuevo ingreso
+    presupuestoInicial += input1;
+    const totalGastado = listaDeGastos.reduce((acc, item) => acc + Number(item.cantidad), 0);
+    dineroRestante = presupuestoInicial - totalGastado;
+
+    dineroExtra.push({
+      id: generarId(),
+      cantidad: input1
+    });
+
+    guardarIngresosEnLocalStorage();
+    alerta('Agregado correctamente', form1, 'exito')
+    mostrarExtras(dineroExtra);
+
+    // Scroll al último ingreso agregado
+    setTimeout(() => {
+      const ultimoIngreso = document.querySelector(`#lista-extra [data-id="${dineroExtra[dineroExtra.length - 1].id}"]`);
+      if (ultimoIngreso) {
+        ultimoIngreso.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        ultimoIngreso.classList.add('resaltado');
+        setTimeout(() => {
+          ultimoIngreso.classList.remove('resaltado');
+        }, 1000);
+      }
+    }, 100);
+
   }
+
+  cantidadInicial.textContent = `$${presupuestoInicial}`;
+  cantidadRestante.textContent = `$${dineroRestante}`;
+
+  inputPresupuesto.value = '';
+
+  if (dineroRestante >= 0) {
+    form2.style.display = 'flex';
+    const mensajeError = document.querySelector('.mensaje-error-gasto');
+    if (mensajeError) mensajeError.remove();
+  }
+
+  sinDinero()
 }
+
 
 function validarGasto(e){
   e.preventDefault()   
+
+  if(dineroExtra.length <= 0){
+    form2.style.display = 'none'
+    alerta('Primero ingresa tu presupuesto', form1, 'error')
+    return
+  } else {
+    form2.style.display = 'flex'
+
+  }
 
   const input1 = inputNombreGasto.value.trim(); 
   const input2 = parseFloat(inputDineroGasto.value.trim()); 
@@ -141,6 +219,18 @@ function validarGasto(e){
       gasto.cantidad = input2; 
       
       guardarGastosEnLocalStorage(); 
+      mostrarGastos(listaDeGastos);
+
+      setTimeout(() => {
+        const elementoEditado = document.querySelector(`#lista-gastos [data-id="${idEnEdicion}"]`);
+        if (elementoEditado) {
+          elementoEditado.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          elementoEditado.classList.add('resaltado');
+          setTimeout(() => {
+            elementoEditado.classList.remove('resaltado');
+          }, 1000);
+        }
+      }, 100);
     }
 
     idEnEdicion = null; 
@@ -155,6 +245,8 @@ function validarGasto(e){
       cantidad: input2,
       id: generarId()
     })
+
+    sinDinero(); 
   }
 
   cantidadRestante.textContent = `$${dineroRestante}`;
@@ -162,6 +254,18 @@ function validarGasto(e){
   mostrarGastos(listaDeGastos); 
   guardarGastosEnLocalStorage(); 
   alerta('Guardado correctamente', form2, 'exito'); 
+
+  // Scroll al último gasto agregado
+  setTimeout(() => {
+    const ultimoGasto = document.querySelector(`#lista-gastos [data-id="${listaDeGastos[listaDeGastos.length - 1].id}"]`);
+    if (ultimoGasto) {
+      ultimoGasto.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      ultimoGasto.classList.add('resaltado');
+      setTimeout(() => {
+        ultimoGasto.classList.remove('resaltado');
+      }, 1000);
+    }
+  }, 100);
 
 
 
@@ -179,30 +283,6 @@ function guardarGastosEnLocalStorage(){
 
 function guardarIngresosEnLocalStorage() {
   localStorage.setItem('ingresos', JSON.stringify(dineroExtra));
-}
-
-function sinDinero(){
-  if(dineroRestante <= 0){
-    const yaExiste = document.querySelector('.mensaje-error-gasto'); 
-    
-    if(!yaExiste){
-
-      alerta('Excediste tu presupuesto', divRestante, 'error' )
-
-      const div = document.createElement('div'); 
-      div.classList.add('bg-red-500', 'border-red-800', 'px-2', 'rounded', 'my-2', 'mensaje-error-gasto');
-  
-      const p = document.createElement('p')
-      p.classList.add( 'text-white', 'text-center')
-      p.textContent = 'No puedes gastar mas dinero, aumenta tu presupuesto'; 
-  
-      div.appendChild(p); 
-      divRestante.appendChild(div); 
-    }
-
-    //Ocultamos el formulario
-    form2.style.display = 'none'; 
-  } 
 }
 
 function editarElemento(id, tipo) {
@@ -230,23 +310,19 @@ function editarElemento(id, tipo) {
     btn.textContent = 'Guardar Cambios';
 
   } else if (tipo === 'ingreso') {
-    // Revertir el efecto del ingreso al presupuesto
-    presupuestoInicial -= item.cantidad;
-    dineroRestante -= item.cantidad;
-
-    // Actualizar valores en pantalla
-    cantidadInicial.textContent = `$${presupuestoInicial}`;
-    cantidadRestante.textContent = `$${dineroRestante}`;
-
-    // Quitar el ingreso del array y localStorage
-    dineroExtra = dineroExtra.filter(el => el.id !== id);
-    guardarIngresosEnLocalStorage();
-    mostrarExtras(dineroExtra);
-
-    // Colocar cantidad en input para re-editar
+    // Llenar el input con el valor actual del ingreso
     inputPresupuesto.value = item.cantidad;
+
+    // Guardar ID del ingreso en edición
+    idEnEdicion = id;
+
+    // Cambiar texto del botón
+    const btn = document.querySelector('#btn-submit-ingreso') || form1.querySelector('button[type="submit"]');
+    if (btn) btn.textContent = 'Guardar Cambios';
   }
+
 }
+
 
 function eliminarElemento(id, tipo) {
   if (tipo === 'gasto') {
@@ -276,17 +352,31 @@ function eliminarElemento(id, tipo) {
         mensajeError.remove();
       }
     }
+
+    sinDinero();
+
   } else if (tipo === 'ingreso') {
+
     // Buscar el ingreso a eliminar
     const ingreso = dineroExtra.find(item => item.id === id);
     if (!ingreso) return;
 
-    // Al eliminar un ingreso, se reduce el presupuesto y el dinero restante
-    presupuestoInicial -= ingreso.cantidad;
-    dineroRestante -= ingreso.cantidad;
+    const totalGastado = listaDeGastos.reduce((acc, item) => acc + Number(item.cantidad), 0);
+    const nuevoPresupuesto = presupuestoInicial - ingreso.cantidad;
+    
+    if (nuevoPresupuesto < totalGastado) {
+      alerta('No puedes eliminar este ingreso, supera los gastos actuales', listaExtra, 'error');
+      return;
+    }
+    
+    presupuestoInicial = nuevoPresupuesto;
+    dineroRestante = presupuestoInicial - totalGastado;
+    
 
     cantidadInicial.textContent = `$${presupuestoInicial}`;
     cantidadRestante.textContent = `$${dineroRestante}`;
+
+    sinDinero(); 
 
     // Eliminar el ingreso del array
     dineroExtra = dineroExtra.filter(item => item.id !== id);
@@ -295,7 +385,7 @@ function eliminarElemento(id, tipo) {
     guardarIngresosEnLocalStorage();
     mostrarExtras(dineroExtra);
 
-    alerta('Ingreso eliminado', listaExtra, 'exito');
+    alerta('Ingreso eliminado', tituloDineroAgregado, 'exito');
   }
 } 
 
@@ -309,3 +399,29 @@ function reiniciarApp(){
   location.reload();
 }
 
+function sinDinero(){
+  if(listaDeGastos.length >= 1 && dineroExtra.length >= 1){
+
+    if(dineroRestante <= 0 || dineroRestante === 0){
+      const yaExiste = document.querySelector('.mensaje-error-gasto'); 
+      
+      if(!yaExiste){
+        
+        const div = document.createElement('div'); 
+        div.classList.add('bg-red-500', 'border-red-800', 'px-2', 'rounded', 'my-2', 'mensaje-error-gasto');
+        
+        const p = document.createElement('p')
+        p.classList.add( 'text-white', 'text-center')
+        p.textContent = 'No puedes gastar mas dinero, aumenta tu presupuesto'; 
+        
+        div.appendChild(p); 
+        divRestante.appendChild(div); 
+      }
+      
+      //Ocultamos el formulario
+      form2.style.display = 'none'; 
+      alerta('Excediste tu presupuesto', divRestante, 'error' )
+    } 
+  }
+
+}
