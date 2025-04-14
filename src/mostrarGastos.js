@@ -25,6 +25,18 @@ export function mostrarGastos(lista){
         btnEditar.classList.add('px-2', 'bg-blue-500', 'border-blue-800', 'rounded', 'text-white', 'transition', 'btn-editar', 'mr-2', 'hover:cursor-pointer', 'hover:bg-blue-700');
         btnEditar.textContent = `Editar` 
         btnEditar.dataset.id = id; 
+
+        btnEditar.addEventListener('click', () => {
+            // Aquí deberías tener tu lógica para cargar el gasto al formulario...
+            const form2 = document.querySelector('#form-2');
+
+            if (form2) {
+               window.scrollTo({
+                top: form2.offsetTop -180,
+                behavior: 'smooth'
+               })
+            }
+        });
         
         const btnEliminar = document.createElement('button')
         btnEliminar.classList.add('px-2', 'bg-red-500', 'border-red-800', 'rounded', 'text-white', 'transition', 'btn-eliminar', 'hover:cursor-pointer', 'hover:bg-red-700');
@@ -63,11 +75,24 @@ export function mostrarExtras(lista){
         btnEditar.classList.add('px-2', 'bg-blue-500', 'border-blue-800', 'rounded', 'text-white', 'transition', 'btn-editar-extra', 'mr-2', 'hover:cursor-pointer', 'hover:bg-blue-700');
         btnEditar.textContent = `Editar` 
         btnEditar.dataset.id = id; 
+
+        btnEditar.addEventListener('click', () => {
+            // Aquí deberías tener tu lógica para cargar el gasto al formulario...
+            const form1 = document.querySelector('#form-1');
+
+            if (form1) {
+               window.scrollTo({
+                top: form1.offsetTop -180,
+                behavior: 'smooth'
+               })
+            }
+        });
         
         const btnEliminar = document.createElement('button')
         btnEliminar.classList.add('px-2', 'bg-red-500', 'border-red-800', 'rounded', 'text-white', 'transition', 'btn-eliminar-extra', 'hover:cursor-pointer', 'hover:bg-red-700');
         btnEliminar.textContent = `Eliminar` 
         btnEliminar.dataset.id = id; 
+        
         
         div.appendChild(p);
         div.appendChild(btnEditar); 
